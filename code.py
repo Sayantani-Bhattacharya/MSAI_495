@@ -1,6 +1,49 @@
 import numpy as np
 import cv2 as cv
 
+# Morphological Operators.
+def dilation(image, kernel_size=(3, 3), iterations=1):
+    # Threshold image to binary (ensure values are 0 or 255)
+    _, binary_img = cv.threshold(image, 127, 255, cv.THRESH_BINARY)
+
+    # Define structuring element (3x3 square by default)
+    kernel = np.ones(kernel_size, dtype=np.uint8)
+
+    # Apply dilation
+    # Get image dimensions
+    rows, cols = binary_img.shape
+
+    # Structuring element (assume all 1s in a square)
+    k_rows, k_cols = kernel_size
+    k_center_r, k_center_c = k_rows // 2, k_cols // 2
+
+    # Pad the input image
+    padded_img = np.pad(binary_img, ((k_center_r, k_center_r), (k_center_c, k_center_c)), mode='constant', constant_values=0)
+
+    # Prepare output image
+    dilated_img = np.zeros_like(binary_img)
+
+    # Dilation operation
+    for i in range(rows):
+        for j in range(cols):
+            # Extract the neighborhood region
+            neighborhood = padded_img[i:i + k_rows, j:j + k_cols]
+            # If any value in the neighborhood is 255, set output to 255
+            if np.any(neighborhood == 255):
+                dilated_img[i, j] = 255
+
+    return dilated_img
+
+
+# def erosion(image, kernel):
+
+# def opening(image, kernel):
+
+# def closing(image, kernel):
+
+# def Boundary(image, kernel):
+
+
 def connect_component_labeling(binary_image):
     print("Reading image...")
     
@@ -100,6 +143,21 @@ def size_filter(rows, cols, label_img):
     return filtered_labels
 
 if __name__ == "__main__":
-    print("Connect Component Labeling")
-    connect_component_labeling('gun.bmp')
-    print("Image processing completed.")  # type: ignore
+    # print("Connect Component Labeling")
+    # connect_component_labeling('gun.bmp')
+    # print("Image processing completed.")  # type: ignore
+
+    # Load image in grayscale
+    # TODO: Add function to load image
+    image = cv.imread('testImg2/gun.bmp', cv.IMREAD_GRAYSCALE)
+    if image is None:
+        raise ValueError("Image not found or unable to load.")
+    
+    # Apply Dilation
+    dialated_img = dilation(image, kernel_size=(3, 3), iterations=1)    
+
+    # TODO: Add function to print-out the image.
+    # Save and return
+    cv.imwrite('dilated_output.png', dialated_img)
+
+
