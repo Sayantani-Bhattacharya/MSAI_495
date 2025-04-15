@@ -3,6 +3,7 @@ import cv2 as cv
 
 def connect_component_labeling(binary_image):
     print("Reading image...")
+    
     # Load the images from bmp file
     image = cv.imread(binary_image, cv.IMREAD_GRAYSCALE)
     if image is None:
@@ -19,7 +20,7 @@ def connect_component_labeling(binary_image):
     # This dictionary stores each label and the set of labels it's equivalent to.
     equivalence_dict = {}
 
-    # FIRST PASS: assign temporary labels in sequence and record equivalences
+    # FIRST PASS: Assign temporary labels in sequence and record equivalences
     for i in range(1, rows + 1):
         for j in range(1, cols + 1):
             # Background elements.
@@ -50,7 +51,7 @@ def connect_component_labeling(binary_image):
         for label in eq_class:
             label_map[label] = root
 
-    # SECOND PASS: update labels using resolved equivalence dictionary.
+    # SECOND PASS: Update labels using resolved equivalence dictionary.
     for i in range(1, rows + 1):
         for j in range(1, cols + 1):
             if label_img[i, j] > 0:
@@ -59,15 +60,10 @@ def connect_component_labeling(binary_image):
     # Remove padding
     label_img = label_img[1:-1, 1:-1]
 
-    # # Count unique labels
-    unique_labels = np.unique(label_img[label_img > 0])
-    # num_components = len(unique_labels)
-
     # Print label matrix to file
     # with open('label_matrix.txt', 'w') as f:
     #     for row in label_img:
     #         f.write(' '.join(map(str, row)) + '\n')
-
 
     # Filer
     size_filtered_labels = size_filter(rows, cols, label_img)
@@ -90,11 +86,8 @@ def connect_component_labeling(binary_image):
     print(f"Total connected components: {num_components}")
     return label_img, num_components
 
-
-def size_filter(rows, cols, label_img):
-    
-    # Filter out small components based on pixel count threshold
-    
+def size_filter(rows, cols, label_img):   
+    # Filter out small components based on pixel count threshold.   
     # Count the number of pixels in each component.
     count = {}
     for i in range(rows):
@@ -102,12 +95,9 @@ def size_filter(rows, cols, label_img):
             label = label_img[i, j]
             if label > 0:
                 count[label] = count.get(label, 0) + 1
-
-    # Filter components based on size
     size_threshold = 500
     filtered_labels = {label for label, size in count.items() if size >= size_threshold}
     return filtered_labels
-
 
 if __name__ == "__main__":
     print("Connect Component Labeling")
