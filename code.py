@@ -2,16 +2,25 @@ import numpy as np
 import cv2 as cv
 
 # Morphological Operators.
-def dilation(image, kernel_size=(3, 3), iterations=1):
+def dilation(image, kernel_size=(3, 3), kernel = None, iterations=1):
+
+    # Add an option to define the kernel matrix itself.
+    # kernel = [(1,1,1,1), (1,0,0,1), (1,0,0,1), (1,1,1,1)]
+    kernel = [(0,0,0,0), (0,1,1,0), (0,1,1,0), (0,0,0,0)]
+
+
+    if kernel is not None:
+        print("Using custom kernel")
+        kernel = np.array(kernel, dtype=np.uint8)
+    else:
+        print("Using default kernel")
+        kernel = np.ones(kernel_size, dtype=np.uint8)
+
     # Threshold image to binary (ensure values are 0 or 255)
     _, binary_img = cv.threshold(image, 127, 255, cv.THRESH_BINARY)
 
-    # Define structuring element (3x3 square by default)
-    kernel = np.ones(kernel_size, dtype=np.uint8)
-    rows, cols = binary_img.shape
-
     # Structuring element (assume all 1s in a square)
-    k_rows, k_cols = kernel_size
+    k_rows, k_cols = kernel.shape
     k_center_r, k_center_c = k_rows // 2, k_cols // 2
 
     # Pad the input image
@@ -21,12 +30,13 @@ def dilation(image, kernel_size=(3, 3), iterations=1):
     dilated_img = np.zeros_like(binary_img)
 
     # Dilation operation
-    for i in range(rows):
-        for j in range(cols):
+    # Assuming `kernel` is a 2D array of the same size as the neighborhood
+    for i in range(binary_img.shape[0]):
+        for j in range(binary_img.shape[1]):
             # Extract the neighborhood region
             neighborhood = padded_img[i:i + k_rows, j:j + k_cols]
-            # If any value in the neighborhood is 255, set output to 255
-            if np.any(neighborhood == 255):
+            # Apply the kernel to the neighborhood
+            if np.any(neighborhood * kernel == 255):  # Element-wise multiplication
                 dilated_img[i, j] = 255
 
     return dilated_img
@@ -190,12 +200,13 @@ if __name__ == "__main__":
 
     # Load image in grayscale
     # TODO: Add function to load image
+
     image = cv.imread('testImg2/palm.bmp', cv.IMREAD_GRAYSCALE)
     if image is None:
         raise ValueError("Image not found or unable to load.")
     
     # Apply Dilation
-    dilated_img = dilation(image, kernel_size=(3, 3), iterations=1) 
+    dilated_img = dilation(image, kernel_size=(4, 4), iterations=1) 
     # TODO: Add function to print-out the image.
     # Save and return
     cv.imwrite('dilated_output.png', dilated_img)   
