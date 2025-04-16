@@ -8,9 +8,6 @@ def dilation(image, kernel_size=(3, 3), iterations=1):
 
     # Define structuring element (3x3 square by default)
     kernel = np.ones(kernel_size, dtype=np.uint8)
-
-    # Apply dilation
-    # Get image dimensions
     rows, cols = binary_img.shape
 
     # Structuring element (assume all 1s in a square)
@@ -34,14 +31,58 @@ def dilation(image, kernel_size=(3, 3), iterations=1):
 
     return dilated_img
 
+def erosion(image, kernel_size=(3, 3), iterations=1):
+    # Threshold image to binary (ensure values are 0 or 255)
+    _, binary_img = cv.threshold(image, 127, 255, cv.THRESH_BINARY)
 
-# def erosion(image, kernel):
+    # Define structuring element (3x3 square by default)
+    kernel = np.ones(kernel_size, dtype=np.uint8)
+    rows, cols = binary_img.shape
 
-# def opening(image, kernel):
+    # Structuring element (assume all 1s in a square)
+    k_rows, k_cols = kernel_size
+    k_center_r, k_center_c = k_rows // 2, k_cols // 2
 
-# def closing(image, kernel):
+    # Pad the input image
+    padded_img = np.pad(binary_img, ((k_center_r, k_center_r), (k_center_c, k_center_c)), mode='constant', constant_values=0)
 
-# def Boundary(image, kernel):
+    # Prepare output image
+    erroded_img = np.zeros_like(binary_img)
+
+    # Dilation operation
+    for i in range(rows):
+        for j in range(cols):
+            # Extract the neighborhood region
+            neighborhood = padded_img[i:i + k_rows, j:j + k_cols]
+            # If all value in the neighborhood is 255, set output to 255
+
+            # if all 255 only then 255.
+            if np.all(neighborhood == 255):
+                erroded_img[i, j] = 255
+            # np.all
+
+    return erroded_img
+
+def opening(image, kernel_size=(3, 3)):
+    # Apply erosion followed by dilation
+    eroded_img = erosion(image, kernel_size)
+    opened_img = dilation(eroded_img, kernel_size)
+    return opened_img
+
+def closing(image, kernel_size=(3, 3)):
+    # Apply dilation followed by erosion
+    dilated_img = dilation(image, kernel_size)
+    closed_img = erosion(dilated_img, kernel_size)
+    return closed_img
+
+def boundary(image, kernel_size=(3, 3), iterations=1):
+    # Apply dilation and then erosion
+    dilated_img = dilation(image, kernel_size, iterations)
+    eroded_img = erosion(image, kernel_size, iterations)
+
+    # Boundary is the difference between dilated and eroded images
+    boundary_img = dilated_img - eroded_img
+    return boundary_img
 
 
 def connect_component_labeling(binary_image):
@@ -149,15 +190,35 @@ if __name__ == "__main__":
 
     # Load image in grayscale
     # TODO: Add function to load image
-    image = cv.imread('testImg2/gun.bmp', cv.IMREAD_GRAYSCALE)
+    image = cv.imread('testImg2/palm.bmp', cv.IMREAD_GRAYSCALE)
     if image is None:
         raise ValueError("Image not found or unable to load.")
     
     # Apply Dilation
-    dialated_img = dilation(image, kernel_size=(3, 3), iterations=1)    
-
+    dilated_img = dilation(image, kernel_size=(3, 3), iterations=1) 
     # TODO: Add function to print-out the image.
     # Save and return
-    cv.imwrite('dilated_output.png', dialated_img)
+    cv.imwrite('dilated_output.png', dilated_img)   
+
+    # Apply Erosion
+    eroded_img = erosion(image, kernel_size=(3, 3), iterations=1)
+    cv.imwrite('eroded_output.png', eroded_img)
+
+    # Apply Boundary
+    boundary_img = boundary(image, kernel_size=(2, 2), iterations=1)
+    cv.imwrite('boundary_output.png', boundary_img)
+
+    # Apply Opening
+    opened_img = opening(image, kernel_size=(3, 3))
+    cv.imwrite('opened_output.png', opened_img)
+
+    # Apply Closing
+    closed_img = closing(image, kernel_size=(3, 3))
+    cv.imwrite('closed_output.png', closed_img)
+
+
+
+    
+
 
 
