@@ -1,0 +1,25 @@
+Grading (MP3)
+
+Basic concepts (30) 
+  A clear idea on what to do (15)
+  Good understanding of the techniques (15)
+
+Report (40)
+  clarity (10)
+  algorithm description (15)
+  results analysis (15)
+
+
+Results (30)
+  
+  matlab code (10) 
+  Test cases 
+    moon.bmp  (10)
+    transfer function  (5)
+    histogram comparison (5)
+    
+  
+
+Bonus on lightling correction (+10)
+  linear method (5)
+  quadratic method (5)
